@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speech Recognition</title>
+
+  <!-- 
+
+https://youtu.be/-k-PgvbktX4
+   -->
+
+  <style>
+    * {
+      margin : 0;
+      padding : 0;
+      box-sizing: : border-box;
+
+    }
+
+    html {
+      font-size : 20px;
+    }
+
+    section {
+      min-height : 100vh;
+      width :100%;
+      display : flex;
+      align-items : center;
+      justify-content: : center;
+      background-color: rgb(37,37,37);
+      flex-direction: column;
+      padding: 50px 0;
+    }
+
+    section h1 {
+      color : rgba(255,255,255,0.322);
+      text-align: center;
+      width : 100%;
+      font-size : 50px;
+      margin-bottom : 10px;
+    }
+
+    section p {
+      text-align : center;
+      color : rgba(255,255,255,0.322);
+      width : 100%;
+      margin-bottom : 40px;
+    }
+
+    .container {
+      width : 90%
+      max-width : 500px;
+      margin : 0 auto;
+      justify-content: center;
+    }
+
+    .texts p {
+      color : black;
+      text-align: left;
+      background-color: white;
+      width : 100%;
+      padding : 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .texts p.replay {
+      text-align : right;
+    }
+
+  </style>
+</head>
+<body>
+
+ <section>
+   <h1>Speech <br> Recognition</h1>
+   <p>Available in Chrome Only</p>
+   <div class="container">
+     <div class="texts">
+     </div>
+   </div>
+
+ </section>
+
+ <script>
+
+  const texts = document.querySelector('.texts');
+  let text;
+  let p = document.createElement("textarea");
+  p.class = "speechResult"
+  let convertingText;
+
+  window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const speechGrammarList = window.SpeechGrammarList || webkitSpeechGrammarList;
+  const speechRecognitionEvent = window.SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
+
+  const kr = 'ko-KR';
+  const jp = 'ja-JP'
+
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  // recognition.lang = 'ja-JP'
+  // recognition.lang = 'en-US'
+  recognition.lang = kr;
+  recognition.maxAlternatives = 1;
+
+  recognition.addEventListener("result", (e) => {
+    console.log(e.results[0][0].transcript)
+    text = Array.from(e.results).map(result => result[0]).map(result => result.transcript).join('');
+    // text = e.results[0][0].transcript;
+
+    if(texts.length !== 0) {
+      translateAPI(text);
+      texts.appendChild(p);
+    }
+  })
+
+  recognition.start();
+
+  recognition.addEventListener("end", () => {
+    recognition.start();
+  })
+
+  recognition.onspeechend = () =>{
+    recognition.stop();
+  }
+
+  recognition.onerror = function(event) {
+    console.log(`Speech recognition error detected: ${event.error}`);
+    console.log(`Additional information: ${event.message}`);
+  }
+
+  async function translateAPI(text) {
+    // let apiUrl = `https://api.mymemory.translated.net/get?q=${text}&langpair=${kr}|${jp}`
+
+    // fetch(apiUrl).then(res => res.json()).then(data=> {
+    //   p.innerText = data.responseData.translatedText;
+    // })
+
+    const res = await fetch("https://libretranslate.com/translate", {
+      method: "POST",
+      body: JSON.stringify({
+        q: text,
+        source: "auto",
+        target: jp,
+      }),
+      headers: { "Content-Type": "application/json" }
+    });
+
+    console.log(await res.json());
+
+  }
+
+
+ </script>
+  
+</body>
+</html>
