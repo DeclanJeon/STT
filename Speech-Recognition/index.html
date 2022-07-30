@@ -68,7 +68,13 @@ https://youtu.be/-k-PgvbktX4
       text-align : right;
     }
 
+    #Langs {
+      width : 100px;
+      height : 25px;
+    }
+
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xdomain/0.8.2/xdomain.min.js" integrity="sha512-StNxuS/ATr0zxLMlRWenCfp1Cnsjw0p3qXMXszzrn4bj56ipqBybmYsJjlDHGmHehj7OUTRBcImkQmOMxSlEeg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
 
@@ -76,6 +82,9 @@ https://youtu.be/-k-PgvbktX4
    <h1>Speech <br> Recognition</h1>
    <p>Available in Chrome Only</p>
    <div class="container">
+
+    <select name="lang" id="Langs" onchange="getValue()"></select>
+
      <div class="texts">
      </div>
    </div>
@@ -134,22 +143,53 @@ https://youtu.be/-k-PgvbktX4
   async function translateAPI(text) {
     // let apiUrl = `https://api.mymemory.translated.net/get?q=${text}&langpair=${kr}|${jp}`
 
-    // fetch(apiUrl).then(res => res.json()).then(data=> {
+    // await fetch(apiUrl).then(res => res.json()).then(data=> {
     //   p.innerText = data.responseData.translatedText;
     // })
+
+    console.log("Translate 진입 ", text);
 
     const res = await fetch("https://libretranslate.com/translate", {
       method: "POST",
       body: JSON.stringify({
         q: text,
-        source: "auto",
-        target: jp,
+        source: "en",
+        target: getValue(),
+        apikey : ""
       }),
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
+  
+    let data = await res.json();
 
-    console.log(await res.json());
+    console.log("result ", data);
+    let { translatedText } = data;
+    p.innerText = translatedText;
+  
+  }
 
+  async function getlangs() {
+    let res = await fetch(`https://libretranslate.com/languages`);
+    let data = await res.json();
+    appenddata(data);
+  }
+
+  getlangs();
+
+  function getValue() {
+    let val = document.getElementById(`Langs`).value;
+    localStorage.setItem(`lang`, JSON.stringify(val));
+    return val;
+  }
+
+  function appenddata(d) {
+    let maindiv = document.getElementById(`Langs`);
+    d.forEach((el) => {
+      let opt = document.createElement(`option`);
+      opt.value = el.code;
+      opt.textContent = el.name;
+      maindiv.append(opt);
+    });
   }
 
 
