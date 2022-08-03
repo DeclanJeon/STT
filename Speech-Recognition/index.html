@@ -13,8 +13,7 @@ https://youtu.be/-k-PgvbktX4
     * {
       margin : 0;
       padding : 0;
-      box-sizing: : border-box;
-
+      box-sizing: border-box;
     }
 
     html {
@@ -72,6 +71,10 @@ https://youtu.be/-k-PgvbktX4
       width : 100px;
       height : 25px;
     }
+    textarea {
+      width : 300px;
+      height : 300px;
+    }
 
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xdomain/0.8.2/xdomain.min.js" integrity="sha512-StNxuS/ATr0zxLMlRWenCfp1Cnsjw0p3qXMXszzrn4bj56ipqBybmYsJjlDHGmHehj7OUTRBcImkQmOMxSlEeg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -98,6 +101,7 @@ https://youtu.be/-k-PgvbktX4
   let p = document.createElement("textarea");
   p.class = "speechResult"
   let convertingText;
+  let translateActivate = false;
 
   window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const speechGrammarList = window.SpeechGrammarList || webkitSpeechGrammarList;
@@ -115,17 +119,37 @@ https://youtu.be/-k-PgvbktX4
   recognition.maxAlternatives = 1;
 
   recognition.addEventListener("result", (e) => {
-    console.log(e.results[0][0].transcript)
+
     text = Array.from(e.results).map(result => result[0]).map(result => result.transcript).join('');
-    // text = e.results[0][0].transcript;
+    console.log(text);
 
     if(texts.length !== 0) {
-      translateAPI(text);
+      translateAPI(text, translateActivate);
+      // p.innerText = text;
       texts.appendChild(p);
     }
   })
 
   recognition.start();
+
+
+  // let textsOutput = p.innerHTML;
+
+  // console.log(textsOutput)
+
+  // if(textsOutput !== '' || textsOutput !== null) {
+  //   let intervalTranslate = setInterval(() => {
+  //     translateAPI(textsOutput, translateActivate);
+  //   }, 2000);
+
+  //   if(translateActivate === false) {
+  //     clearInterval(intervalTranslate);
+  //   }
+  // }
+  // else{
+  //   translateAPI(textsOutput, translateActivate);
+  // }
+
 
   recognition.addEventListener("end", () => {
     recognition.start();
@@ -140,32 +164,39 @@ https://youtu.be/-k-PgvbktX4
     console.log(`Additional information: ${event.message}`);
   }
 
-  async function translateAPI(text) {
+  async function translateAPI(text, active) {
+    active = true;
+
     // let apiUrl = `https://api.mymemory.translated.net/get?q=${text}&langpair=${kr}|${jp}`
 
     // await fetch(apiUrl).then(res => res.json()).then(data=> {
     //   p.innerText = data.responseData.translatedText;
     // })
 
-    console.log("Translate 진입 ", text);
+    console.log("Translate 진입 : ", text)
 
-    const res = await fetch("https://libretranslate.com/translate", {
-      method: "POST",
-      body: JSON.stringify({
-        q: text,
-        source: "en",
-        target: getValue(),
-        apikey : ""
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
-  
-    let data = await res.json();
+    if(active === true) {
+      const res = await fetch("https://translate.argosopentech.com/translate", {
+      // const res = await fetch("http://ds.owake.me:5000/translate", {
+        method: "POST",
+        body: JSON.stringify({
+          q: text,
+          source: "ko",
+          target: getValue(),
+        }),
+        headers: {
+          "Content-Type": "application/json"}
+        });
 
-    console.log("result ", data);
-    let { translatedText } = data;
-    p.innerText = translatedText;
-  
+      let data = await res.json();
+      console.log(data.translatedText);
+      p.innerText = data.translatedText;
+
+      acitve = false;
+    }
+    else {
+      cosolelog("Not Trnaslator!!")
+    }
   }
 
   async function getlangs() {
@@ -191,7 +222,6 @@ https://youtu.be/-k-PgvbktX4
       maindiv.append(opt);
     });
   }
-
 
  </script>
   
